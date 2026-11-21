@@ -158,7 +158,7 @@ async function streamHandler(args) {
   try {
     return await cache.wrap(cacheKey, ttl, async () => {
       const { slug } = parser.parseVideoId(id);
-      const episodeMatch = id.match(/:1:(\d+)$/);
+      const episodeMatch = id.match(/:1:(\d+)$/) || id.match(/-episode-(\d+)$/i);
       const episodeNum = episodeMatch ? episodeMatch[1] : '1';
       
       logger.debug(`Extracting streams from all providers for: ${slug}`);
@@ -230,7 +230,11 @@ async function streamHandler(args) {
           )
         ]);
       }
-      
+
+      // Make sure the scrapers are loaded before use
+      hentaimamaScraper = getScraperLazy('hmm');
+      hentaiseaScraper = getScraperLazy('hse');
+      hentaitvScraper = getScraperLazy('htv');
       // Poll ALL providers in parallel with timeout (15s max per provider)
       // This prevents slow providers from causing memory buildup
       const PROVIDER_TIMEOUT = 15000;
